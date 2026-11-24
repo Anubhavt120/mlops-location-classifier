@@ -1,0 +1,49 @@
+# Google Cloud Build CI/CD Automation Pipeline
+# Automatically builds, tests, packages into Docker, and deploys to Google Kubernetes Engine (GKE) or Cloud Run
+
+steps:
+  # Step 1: Run automated unit tests
+  - name: 'python:3.11-slim'
+    id: 'run-unit-tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r requirements.txt pytest
+        pytest tests/
+
+  # Step 2: Build the Docker container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-docker-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/location-classifier:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/location-classifier:latest'
+      - '.'
+
+  # Step 3: Push the container image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-docker-image'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/location-classifier:latest'
+
+  # Step 4: Deploy to Google Kubernetes Engine (GKE) Cluster
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'deploy-to-gke'
+    args:
+      - 'apply'
+      - '-f'
+      - 'deployment.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=location-classifier-cluster'
+
+images:
+  - 'gcr.io/$PROJECT_ID/location-classifier:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/location-classifier:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

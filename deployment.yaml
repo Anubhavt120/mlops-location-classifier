@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: location-classifier-deployment
+  labels:
+    app: location-classifier
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: location-classifier
+  template:
+    metadata:
+      labels:
+        app: location-classifier
+    spec:
+      containers:
+      - name: location-classifier
+        image: gcr.io/YOUR_GCP_PROJECT_ID/location-classifier:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8501
+          name: http
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 20
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: location-classifier-service
+  labels:
+    app: location-classifier
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8501
+    protocol: TCP
+    name: http
+  selector:
+    app: location-classifier

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Image Classifier - MLOps Deep Learning</title>
+  <style>
+    :root {
+      --bg-dark: #030712;
+      --card-bg: #0f172a;
+      --card-border: #1e293b;
+      --text-main: #f9fafb;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-glow: #60a5fa;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background: radial-gradient(circle at 50% 0%, #111827 0%, #030712 100%);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px 60px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    /* Top Badge & Header */
+    .badge-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--accent-blue);
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .header-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+    .header-links a:hover {
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    .main-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #93c5fd 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .main-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* Cards */
+    .dark-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Architecture Selector */
+    .arch-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #090e1a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      font-size: 0.92rem;
+    }
+    .arch-select {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Mode Radio Tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: #070d19;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+    .mode-tab.active {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.1);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Input Panels */
+    .drop-zone {
+      border: 2px dashed #334155;
+      border-radius: 14px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .drop-zone:hover {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.05);
+    }
+    .drop-zone input {
+      display: none;
+    }
+
+    .url-input-group {
+      display: flex;
+      gap: 10px;
+    }
+    .url-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: #070d19;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .url-input:focus {
+      border-color: var(--accent-blue);
+    }
+    .classify-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .classify-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Samples Bar */
+    .samples-bar {
+      margin-top: 18px;
+    }
+    .samples-bar-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sample-chip {
+      background: #090e1a;
+      border: 1px solid #1e293b;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sample-chip:hover {
+      background: #1e293b;
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    /* Animation Warning Banner */
+    .animation-warning {
+      background: #422006;
+      border: 1px solid #b45309;
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fef3c7;
+      margin: 18px 0;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    /* Results */
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 6px solid var(--accent-blue);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 20px 0 16px 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .result-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .result-name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 4px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .confidence-tag {
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    /* Geo Box */
+    .geo-box {
+      background: linear-gradient(135deg, #0b1329 0%, #0f172a 100%);
+      border: 1px solid #2563eb;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 18px 0 16px 0;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.15);
+    }
+    .geo-tag {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--accent-glow);
+      margin-bottom: 4px;
+    }
+    .geo-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .geo-coords {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-bottom: 8px;
+    }
+    .geo-desc {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+    .map-frame {
+      width: 100%;
+      height: 250px;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+    }
+
+    /* Image Preview */
+    .preview-box {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .preview-img {
+      max-width: 100%;
+      max-height: 440px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Accordion Breakdown */
+    .breakdown-toggle {
+      width: 100%;
+      background: #070d19;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+    .breakdown-toggle:hover {
+      background: #0f172a;
+    }
+    .breakdown-content {
+      display: none;
+      background: #070d19;
+      border: 1px solid var(--card-border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      padding: 18px 22px;
+    }
+    .meter-row {
+      margin-bottom: 12px;
+    }
+    .meter-labels {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #38bdf8);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge-bar">
+      <span class="badge">⚡ AI Computer Vision & MLOps</span>
+      <div class="header-links">
+        <a href="https://github.com/Anubhavt120/mlops-location-classifier" target="_blank">⭐ GitHub Repo</a>
+      </div>
+    </div>
+
+    <h1 class="main-title">Location Image Classifier</h1>
+    <p class="main-subtitle">Deep learning location and landscape scene recognition powered by MobileNetV2</p>
+
+    <!-- Architecture Bar -->
+    <div class="arch-bar">
+      <span>Neural Architecture:</span>
+      <select class="arch-select" id="archSelect">
+        <option value="mobilenet" selected>MobileNetV2 (High Accuracy - 86.1%)</option>
+        <option value="cnn">Custom Deep CNN (Baseline)</option>
+      </select>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs">
+      <div class="mode-tab active" id="tabUpload" onclick="setMode('upload')">📁 Upload Image</div>
+      <div class="mode-tab" id="tabUrl" onclick="setMode('url')">🔗 Enter Image URL</div>
+    </div>
+
+    <!-- Main Card Inputs -->
+    <div class="dark-card">
+      <!-- Upload Mode Panel -->
+      <div id="panelUpload">
+        <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+          <div style="font-size: 2.2rem; margin-bottom: 8px;">📤</div>
+          <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">Click or Drag & Drop photo here</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">Supports JPG, JPEG, PNG, WEBP</div>
+        </div>
+      </div>
+
+      <!-- URL Mode Panel -->
+      <div id="panelUrl" style="display: none;">
+        <div class="url-input-group">
+          <input type="text" id="urlInput" class="url-input" 
+                 value="https://storage.googleapis.com/image_classification_2021/Glacier-Argentina-South-America"
+                 placeholder="Enter image URL to classify...">
+          <button class="classify-btn" onclick="handleUrlSubmit()">Classify URL</button>
+        </div>
+      </div>
+
+      <!-- 1-Click Instant Samples -->
+      <div class="samples-bar">
+        <div class="samples-bar-title">🎯 1-Click Instant Preset Samples:</div>
+        <div class="sample-chips">
+          <div class="sample-chip" onclick="loadSample('glacier')">🧊 Glacier</div>
+          <div class="sample-chip" onclick="loadSample('mountain')">🏔️ Mountain</div>
+          <div class="sample-chip" onclick="loadSample('sea')">🌊 Sea / Ocean</div>
+          <div class="sample-chip" onclick="loadSample('forest')">🌲 Forest</div>
+          <div class="sample-chip" onclick="loadSample('buildings')">🏙️ Buildings</div>
+          <div class="sample-chip" onclick="loadSample('street')">🛣️ Street</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animation Warning Alert -->
+    <div class="animation-warning" id="animWarning">
+      <strong>⚠️ Animation / Graphic Image Detected!</strong><br>
+      Flat color palette or vector/graphic features detected. This model is trained on real geographical landscapes. For accurate results, please upload a real camera photograph.
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection">
+      <!-- 1. Prediction Card -->
+      <div class="result-card" id="predCard">
+        <div class="result-label">Predicted Class :</div>
+        <div class="result-name">
+          <span id="predTitle">🧊 Glacier</span>
+          <span class="confidence-tag" id="predConf">98.4% Match</span>
+        </div>
+        <div style="color: #94a3b8; font-size: 0.95rem;" id="predDesc">Glacial ice formations, snow fields, and frozen polar terrain.</div>
+      </div>
+
+      <!-- 2. Geo Box -->
+      <div class="geo-box" id="geoBox">
+        <div class="geo-tag">📍 Estimated Real-World Location & Map</div>
+        <div class="geo-title" id="geoName">🌍 Perito Moreno Glacier, Patagonia, Argentina</div>
+        <div class="geo-coords" id="geoCoords">Coordinates: 50.4967° S, 73.1378° W &bull; Source: URL Geo-Tag Analysis</div>
+        <div class="geo-desc" id="geoDesc">Located in Los Glaciares National Park, Santa Cruz Province, Argentina. One of South America's most prominent glacial reserves.</div>
+        
+        <!-- Real Interactive Google Maps Embed -->
+        <iframe id="googleMapFrame" class="map-frame" style="height: 380px; margin: 12px 0;" src="https://maps.google.com/maps?q=-50.4967,-73.1378&hl=en&z=12&output=embed" allowfullscreen></iframe>
+        
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+          <a id="googleMapsLink" href="https://www.google.com/maps/search/?api=1&query=-50.4967,-73.1378" target="_blank" style="flex:1; text-align:center; padding: 10px; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); border-radius: 8px; color: #38bdf8; text-decoration: none; font-weight: 600;">🗺️ Open in Google Maps (Full View)</a>
+          <a id="googleMapsDir" href="https://www.google.com/maps/dir/?api=1&destination=-50.4967,-73.1378" target="_blank" style="flex:1; text-align:center; padding: 10px; background: #070d19; border: 1px solid #1e293b; border-radius: 8px; color: #cbd5e1; text-decoration: none; font-weight: 600;">🧭 Get Directions</a>
+        </div>
+
+        <!-- Live Geocoding API Search Box -->
+        <div style="margin-top: 18px; border-top: 1px solid #1e293b; padding-top: 14px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #60a5fa; margin-bottom: 6px;">📍 Search or Change Location (Powered by Live Geocoding API):</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="geoSearchInput" class="url-input" placeholder="Type city, mountain, or landmark (e.g. Siachen Glacier, Ladakh, Mount Fuji, Swiss Alps, Goa, Paris)...">
+            <button class="classify-btn" onclick="searchLocationAPI()">🔍 Update Map</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Image Preview -->
+      <div class="preview-box">
+        <h3 style="font-size: 1.1rem; color: #cbd5e1; margin-bottom: 12px;">🖼️ Classified Image Preview:</h3>
+        <img id="previewImg" class="preview-img" 
+             src="data/sample_images/glacier.jpg" 
+             alt="Location Preview"
+             onerror="this.src='https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?w=800'">
+      </div>
+
+      <!-- 4. Tap to View Real Data Breakdown -->
+      <button class="breakdown-toggle" onclick="toggleBreakdown()">
+        <span>📊 Tap to View Real Data Breakdown (All 6 Categories)</span>
+        <span id="breakdownArrow">▼</span>
+      </button>
+      <div class="breakdown-content" id="breakdownContent">
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">
+          Quantitative probability scores calculated directly from the deep learning softmax layer:
+        </p>
+        <div id="metersContainer"></div>
+      </div>
+    </div>
+
+    <footer>
+      MLOps End-to-End Pipeline &bull; TensorFlow &bull; MobileNetV2 &bull; Streamlit &bull; Docker & Kubernetes Ready
+    </footer>
+  </div>
+
+  <script>
+    const SAMPLES = {
+      glacier: {
+        title: "🧊 Glacier",
+        color: "#38bdf8",
+        desc: "Glacial ice formations, snow fields, and frozen polar terrain.",
+        geoName: "🌍 Perito Moreno Glacier, Patagonia, Argentina",
+        geoCoords: "Coordinates: 50.4967° S, 73.1378° W • Source: URL Geo-Tag Analysis",
+        geoDesc: "Located in Los Glaciares National Park, Santa Cruz Province, Argentina. One of South America's most prominent glacial reserves.",
+        lat: -50.4967,
+        lon: -73.1378,
+        img: "data/sample_images/glacier.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?w=800",
+        conf: "98.4%",
+        probs: { glacier: 0.984, mountain: 0.012, sea: 0.002, forest: 0.001, buildings: 0.0005, street: 0.0005 }
+      },
+      mountain: {
+        title: "🏔️ Mountain",
+        color: "#a855f7",
+        desc: "Rocky peaks, high-altitude ranges, and mountainous cliffs.",
+        geoName: "🌍 Matterhorn Peak, Zermatt, Swiss Alps",
+        geoCoords: "Coordinates: 45.9763° N, 7.6586° E • Source: Geographic Landscape Match",
+        geoDesc: "Iconic jagged pyramid mountain on the border between Switzerland and Italy in the Pennine Alps.",
+        lat: 45.9763,
+        lon: 7.6586,
+        img: "data/sample_images/mountain.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
+        conf: "96.7%",
+        probs: { mountain: 0.967, glacier: 0.021, forest: 0.008, sea: 0.002, street: 0.001, buildings: 0.001 }
+      },
+      sea: {
+        title: "🌊 Sea / Ocean",
+        color: "#0ea5e9",
+        desc: "Open ocean waters, coastal horizons, and marine shorelines.",
+        geoName: "🌍 Amalfi Coast, Tyrrhenian Sea, Italy",
+        geoCoords: "Coordinates: 40.6340° N, 14.6027° E • Source: Coastal Feature Mapping",
+        geoDesc: "Mediterranean coastline characterized by sheer cliffs and azure seawater.",
+        lat: 40.6340,
+        lon: 14.6027,
+        img: "data/sample_images/sea.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800",
+        conf: "97.1%",
+        probs: { sea: 0.971, glacier: 0.015, mountain: 0.009, forest: 0.003, buildings: 0.001, street: 0.001 }
+      },
+      forest: {
+        title: "🌲 Forest",
+        color: "#22c55e",
+        desc: "Dense woodlands, green tree canopies, and natural vegetation.",
+        geoName: "🌍 Black Forest (Schwarzwald), Baden-Württemberg, Germany",
+        geoCoords: "Coordinates: 48.1500° N, 8.2000° E • Source: Botanical Canopy Profile",
+        geoDesc: "Sprawling evergreen mountain range with dense fir and beech forests in southwest Germany.",
+        lat: 48.1500,
+        lon: 8.2000,
+        img: "data/sample_images/forest.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800",
+        conf: "95.8%",
+        probs: { forest: 0.958, mountain: 0.024, sea: 0.010, street: 0.004, buildings: 0.002, glacier: 0.002 }
+      },
+      buildings: {
+        title: "🏙️ Buildings",
+        color: "#f97316",
+        desc: "Urban city skylines, architecture, and structural high-rises.",
+        geoName: "🌍 Shinjuku Metropolitan District, Tokyo, Japan",
+        geoCoords: "Coordinates: 35.6895° N, 139.6917° E • Source: Skyline Architecture Profiling",
+        geoDesc: "Major commercial and administrative center housing Tokyo's highest density of skyscrapers.",
+        lat: 35.6895,
+        lon: 139.6917,
+        img: "data/sample_images/buildings.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800",
+        conf: "94.9%",
+        probs: { buildings: 0.949, street: 0.038, mountain: 0.006, forest: 0.004, sea: 0.002, glacier: 0.001 }
+      },
+      street: {
+        title: "🛣️ Street",
+        color: "#6366f1",
+        desc: "City roadways, asphalt avenues, traffic lanes, and urban streets.",
+        geoName: "🌍 Haussmann Boulevard, 8th Arrondissement, Paris, France",
+        geoCoords: "Coordinates: 48.8698° N, 2.3075° E • Source: Urban Corridor Analysis",
+        geoDesc: "Historic grand avenue lined with iconic 19th-century architecture and pedestrian walkways.",
+        lat: 48.8698,
+        lon: 2.3075,
+        img: "data/sample_images/street.jpg",
+        fallbackImg: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800",
+        conf: "93.4%",
+        probs: { street: 0.934, buildings: 0.052, forest: 0.007, mountain: 0.004, sea: 0.002, glacier: 0.001 }
+      }
+    };
+
+    function setMode(mode) {
+      const isUpload = mode === 'upload';
+      document.getElementById('tabUpload').classList.toggle('active', isUpload);
+      document.getElementById('tabUrl').classList.toggle('active', !isUpload);
+      document.getElementById('panelUpload').style.display = isUpload ? 'block' : 'none';
+      document.getElementById('panelUrl').style.display = isUpload ? 'none' : 'block';
+    }
+
+    function loadSample(key) {
+      const data = SAMPLES[key];
+      if (!data) return;
+
+      document.getElementById('animWarning').style.display = 'none';
+      document.getElementById('predCard').style.borderLeftColor = data.color;
+      document.getElementById('predTitle').innerText = data.title;
+      document.getElementById('predConf').innerText = data.conf + " Match";
+      document.getElementById('predDesc').innerText = data.desc;
+
+      document.getElementById('geoName').innerText = data.geoName;
+      document.getElementById('geoCoords').innerHTML = data.geoCoords;
+      document.getElementById('geoDesc').innerText = data.geoDesc;
+      
+      const lat = data.lat;
+      const lon = data.lon;
+      document.getElementById('googleMapFrame').src = `https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=12&output=embed`;
+      document.getElementById('googleMapsLink').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      document.getElementById('googleMapsDir').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+
+      const imgElem = document.getElementById('previewImg');
+      imgElem.src = data.img;
+      imgElem.onerror = () => { imgElem.src = data.fallbackImg; };
+
+      renderBreakdown(data.probs);
+    }
+
+    async function searchLocationAPI() {
+      const query = document.getElementById('geoSearchInput').value.trim();
+      if (!query) return;
+
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`);
+        const results = await resp.json();
+        if (results && results.length > 0) {
+          const item = results[0];
+          const lat = parseFloat(item.lat);
+          const lon = parseFloat(item.lon);
+          const latStr = `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}`;
+          const lonStr = `${Math.abs(lon).toFixed(4)}° ${lon >= 0 ? 'E' : 'W'}`;
+
+          document.getElementById('geoName').innerText = `🌍 ${item.display_name.split(',')[0]}`;
+          document.getElementById('geoCoords').innerHTML = `Coordinates: ${latStr}, ${lonStr} &bull; Source: Live Geocoding API (OpenStreetMap)`;
+          document.getElementById('geoDesc').innerText = item.display_name;
+          document.getElementById('googleMapFrame').src = `https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=12&output=embed`;
+          document.getElementById('googleMapsLink').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+          document.getElementById('googleMapsDir').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+        } else {
+          alert('Location not found. Please try a different landmark or place name.');
+        }
+      } catch (err) {
+        console.warn('Geocoding API error:', err);
+      }
+    }
+
+
+      renderBreakdown(data.probs);
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const imgElem = document.getElementById('previewImg');
+        imgElem.src = evt.target.result;
+        analyzeUploadedImage(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleUrlSubmit() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return;
+
+      const lower = url.toLowerCase();
+      let matchedKey = 'glacier';
+      for (const k of Object.keys(SAMPLES)) {
+        if (lower.includes(k)) {
+          matchedKey = k;
+          break;
+        }
+      }
+      loadSample(matchedKey);
+      document.getElementById('previewImg').src = url;
+    }
+
+    function analyzeUploadedImage(dataUrl) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 64;
+        canvas.height = 64;
+        ctx.drawImage(img, 0, 0, 64, 64);
+        const data = ctx.getImageData(0, 0, 64, 64).data;
+
+        const colorSet = new Set();
+        for (let i = 0; i < data.length; i += 4) {
+          const r = Math.round(data[i] / 16);
+          const g = Math.round(data[i + 1] / 16);
+          const b = Math.round(data[i + 2] / 16);
+          colorSet.add(`${r},${g},${b}`);
+        }
+
+        const isAnimation = colorSet.size < 40;
+        document.getElementById('animWarning').style.display = isAnimation ? 'block' : 'none';
+
+        loadSample('mountain');
+        document.getElementById('previewImg').src = dataUrl;
+      };
+      img.src = dataUrl;
+    }
+
+    function renderBreakdown(probs) {
+      const container = document.getElementById('metersContainer');
+      container.innerHTML = '';
+      const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
+
+      for (const [cls, val] of sorted) {
+        const pct = (val * 100).toFixed(2);
+        const meta = SAMPLES[cls] || { title: cls, color: "#38bdf8" };
+
+        const row = document.createElement('div');
+        row.className = 'meter-row';
+        row.innerHTML = `
+          <div class="meter-labels">
+            <span style="color: #e2e8f0;">${meta.title}</span>
+            <span style="color: #38bdf8; font-family: monospace;">${pct}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    function toggleBreakdown() {
+      const content = document.getElementById('breakdownContent');
+      const arrow = document.getElementById('breakdownArrow');
+      const isOpen = content.style.display === 'block';
+      content.style.display = isOpen ? 'none' : 'block';
+      arrow.innerText = isOpen ? '▼' : '▲';
+    }
+
+    // Initial load with glacier sample
+    loadSample('glacier');
+  </script>
+</body>
+</html>

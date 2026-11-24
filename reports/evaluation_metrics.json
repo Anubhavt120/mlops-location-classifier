@@ -1,0 +1,96 @@
+{
+  "Custom CNN": {
+    "model_name": "Custom CNN Baseline",
+    "test_loss": 2.0034704208374023,
+    "test_accuracy": 0.1944444477558136,
+    "macro_precision": 0.08398076211616723,
+    "macro_recall": 0.19444444444444442,
+    "macro_f1": 0.10999115826702033,
+    "weighted_f1": 0.10999115826702034,
+    "per_class": {
+      "buildings": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 12.0
+      },
+      "forest": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 12.0
+      },
+      "glacier": {
+        "precision": 0.35294117647058826,
+        "recall": 0.5,
+        "f1-score": 0.41379310344827586,
+        "support": 12.0
+      },
+      "mountain": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 12.0
+      },
+      "sea": {
+        "precision": 0.1509433962264151,
+        "recall": 0.6666666666666666,
+        "f1-score": 0.24615384615384617,
+        "support": 12.0
+      },
+      "street": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 12.0
+      }
+    }
+  },
+  "MobileNetV2": {
+    "model_name": "MobileNetV2 Transfer Learning",
+    "test_loss": 0.4492849111557007,
+    "test_accuracy": 0.8611111044883728,
+    "macro_precision": 0.8737179487179487,
+    "macro_recall": 0.8611111111111112,
+    "macro_f1": 0.8620922475270301,
+    "weighted_f1": 0.8620922475270301,
+    "per_class": {
+      "buildings": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1-score": 0.8888888888888888,
+        "support": 12.0
+      },
+      "forest": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 12.0
+      },
+      "glacier": {
+        "precision": 0.6923076923076923,
+        "recall": 0.75,
+        "f1-score": 0.72,
+        "support": 12.0
+      },
+      "mountain": {
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1-score": 0.75,
+        "support": 12.0
+      },
+      "sea": {
+        "precision": 1.0,
+        "recall": 0.9166666666666666,
+        "f1-score": 0.9565217391304348,
+        "support": 12.0
+      },
+      "street": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1-score": 0.8571428571428571,
+        "support": 12.0
+      }
+    }
+  }
+}

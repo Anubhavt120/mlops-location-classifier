@@ -1,0 +1,5 @@
+app.py
+requirements.txt
+.pytest_cache/
+reports/
+tests/
